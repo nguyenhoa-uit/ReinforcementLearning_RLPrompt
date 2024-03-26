@@ -1,3 +1,8 @@
+import os
+import sys 
+sys.path.append("D:\GIT ALL\ReinforcementLearning_RLPrompt")
+sys.path.append("D:\GIT ALL\ReinforcementLearning_RLPrompt\examples\efew-shot-classification")
+
 import torch
 import numpy as np
 from torch.utils.data import Dataset, DataLoader
@@ -102,6 +107,10 @@ class Trainer:
         step: int,
         batch: Dict[str, Any]
     ) -> Dict[str, Any]:
+        
+
+    # module ---> modulealgo_module = make_sql_module(prompt_model, reward, config)
+
         model = self.module.train()
         model._pre_steps(step)
 
@@ -155,6 +164,12 @@ class Trainer:
         total_steps = 0
         for epoch in range(total_train_epochs):
             for step, batch in enumerate(train_dataloader):
+        #     {'source_texts': ['too silly to take seriously .', 
+        # "i do n't blame eddie murphy but should n't owen wilson know a movie must have a story and a script ?", 'follows the original film virtually scene for scene and yet manages to bleed it almost completely dry of humor , verve and fun .', 'some body smacks of exhibitionism more than it does cathartic truth telling .', "the densest distillation of roberts ' movies ever made .", 'although it starts off so bad that you feel like running out screaming , it eventually works its way up to merely bad rather than painfully awful .', "offers absolutely nothing i had n't already seen .", "this u-boat does n't have a captain .", 'collapses under its own meager weight .', "one hour photo may seem disappointing in its generalities , but it 's the little nuances that perhaps had to escape from director mark romanek 's self-conscious scrutiny to happen , that finally get under your skin .", "one can only assume that the jury who bestowed star hoffman 's brother gordy with the waldo salt screenwriting award at 2002 's sundance festival were honoring an attempt to do something different over actually pulling it off", "as violent , profane and exploitative as the most offensive action flick you 've ever seen .", 'kung pow seems like some futile concoction that was developed hastily after oedekerk and his fellow moviemakers got through crashing a college keg party .', 'collapses after 30 minutes into a slap-happy series of adolescent violence .', "the movie is as padded as allen 's jelly belly .", "it 's the kind of under-inspired , overblown enterprise that gives hollywood sequels a bad name .", 'real women have curves wears its empowerment on its sleeve but even its worst harangues are easy to swallow thanks to remarkable performances by ferrera and ontiveros .', "a mature , deeply felt fantasy of a director 's travel through 300 years of russian history .", 'leave it to the french to truly capture the terrifying angst of the modern working man without turning the film into a cheap thriller , a dumb comedy or a sappy melodrama .', ...], 'class_labels': tensor([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1,
+        # 1, 1, 1, 1, 1, 1, 1, 1])}
+                               
+                
+                
                 batch_log = self._train_step(step, batch)
                 if report_to_wandb:
                     wandb.log(batch_log)

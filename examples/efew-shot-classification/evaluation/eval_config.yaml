@@ -1,0 +1,25 @@
+# Few-Shot Classification Config
+# Data
+num_shots: 16
+base_path: "../data"
+dataset: "sst-2"
+dataset_seed: 0
+# Rewardg
+task_lm: "roberta-large"
+is_mask_lm: null
+prompt: "GroupEventStyAbsolutely absolutely"
+
+# prompt: "MaterialEventPlanetAbsolutely absolutely"
+
+# prompt: "DriverEventStyAbsolutely equally"
+
+# Few-Shot Classification Config
+# Data
+# num_shots: 16
+# base_path: "../data"
+# dataset: "agnews"
+# dataset_seed: 0
+# # Rewardg
+# task_lm: "roberta-large"
+# is_mask_lm: null
+# prompt: "Alert Blog Dialogue Diary Accountability"
