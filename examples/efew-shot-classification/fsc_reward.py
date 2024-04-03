@@ -1,4 +1,6 @@
 import torch
+from torch import nn
+import torch.nn.functional as F
 import numpy as np
 from transformers import AutoTokenizer, AutoModelForMaskedLM, GPT2LMHeadModel
 from typing import List, Dict, Optional, Tuple, Union, Any
@@ -71,6 +73,111 @@ class PromptedClassificationReward(BaseReward):
             template = "{sentence_1} {prompt}"
         return template
 
+    def reward_engineering(self,all_logits,batch_size,class_labels):
+        class_probs = torch.softmax(all_logits[:, self.verbalizer_ids], -1)
+            # [batch_size, num_classes]
+
+            # Get label and maximum not-label probabilities
+        label_probs = class_probs[range(batch_size), class_labels]
+            # [batch_size, 1]
+        not_label_probs = torch.where(
+            class_probs == label_probs.unsqueeze(1),
+                torch.Tensor([-1]).to(self.device), class_probs)
+            # [batch_size, num_classes]
+        max_not_label_probs, _ = torch.max(not_label_probs, -1)
+            # [batch_size, 1]
+
+            # Compute piecewise gap reward
+        gap = (label_probs - max_not_label_probs)
+        correct = (gap > 0).long()
+        gap_rewards = gap * (self.correct_coeff * correct \
+                                 + self.incorrect_coeff * (1 - correct))
+        reward = gap_rewards.mean().detach()
+        return reward,correct,gap_rewards,class_probs
+    
+
+
+    
+    def reward_engineering_KL(self,all_logits,batch_size,class_labels):
+        class_probs = torch.softmax(all_logits[:, self.verbalizer_ids], -1)
+            # [batch_size, num_classes]
+
+            # Get label and maximum not-label probabilities
+        label_probs = class_probs[range(batch_size), class_labels]
+        # label_probslabel_probs=torch.tensor(label_probs).to(self.device)
+
+        reward = F.kl_div(class_probs,F.one_hot(class_labels.to(self.device)).float() ,reduction="batchmean")
+            # [batch_size, 1]
+        not_label_probs = torch.where(
+            class_probs == label_probs.unsqueeze(1),
+                torch.Tensor([-1]).to(self.device), class_probs)
+            # [batch_size, num_classes]
+        max_not_label_probs, _ = torch.max(not_label_probs, -1)
+            # [batch_size, 1]
+
+            # Compute piecewise gap reward
+        gap = (label_probs - max_not_label_probs)
+        correct = (gap > 0).long()
+        gap_rewards = gap * (self.correct_coeff * correct \
+                                 + self.incorrect_coeff * (1 - correct))
+        reward1 = gap_rewards.mean().detach()
+        
+        return reward,reward1,correct,gap_rewards,class_probs
+
+    def reward_engineering_XE(self,all_logits,batch_size,class_labels):
+        class_probs = torch.softmax(all_logits[:, self.verbalizer_ids], -1)
+            # Get label and maximum not-label probabilities
+        label_probs = class_probs[range(batch_size), class_labels]
+        # label_probslabel_probs=torch.tensor(label_probs).to(self.device)
+        reward = F.cross_entropy(class_probs,F.one_hot(class_labels.to(self.device)).float(),reduction='mean')
+        reward=self.correct_coeff*(1-reward)
+        not_label_probs = torch.where(
+            class_probs == label_probs.unsqueeze(1),
+                torch.Tensor([-1]).to(self.device), class_probs)
+            # [batch_size, num_classes]
+        max_not_label_probs, _ = torch.max(not_label_probs, -1)
+            # [batch_size, 1]
+        gap = (label_probs - max_not_label_probs)
+        correct = (gap > 0).long()
+        gap_rewards = gap * (self.correct_coeff * correct \
+                                 + self.incorrect_coeff * (1 - correct))
+        reward1 = gap_rewards.mean().detach()    
+        return reward,reward1,correct,gap_rewards,class_probs
+    
+    def reward_engineering_quad(self,all_logits,batch_size,class_labels):
+        class_probs = torch.softmax(all_logits[:, self.verbalizer_ids], -1)
+            # [batch_size, num_classes]
+
+            # Get label and maximum not-label probabilities
+        label_probs = class_probs[range(batch_size), class_labels].to(self.device)
+        # label_probs=torch.tensor(label_probs).to(self.device)
+
+        # reward1=self.correct_coeff*F.cross_entropy(class_probs,class_labels.to(self.device))
+        # reward = nn.KLDivLoss(reduction="batchmean")(class_probs,class_labels.to(self.device))
+            # [batch_size, 1]
+        not_label_probs = torch.where(
+            class_probs == label_probs.unsqueeze(1),
+                torch.Tensor([-1]).to(self.device), class_probs)
+            # [batch_size, num_classes]
+        max_not_label_probs, _ = torch.max(not_label_probs, -1)
+            # [batch_size, 1]
+
+            # Compute piecewise gap reward
+        gap = (label_probs - max_not_label_probs)
+        correct = (gap > 0).long()
+        gap_rewards1 = gap * (self.correct_coeff * correct \
+                                 + self.incorrect_coeff * (1 - correct))
+        gap_rewards = 0.5*gap * (self.correct_coeff * correct \
+                                 + self.incorrect_coeff * (1 - correct)) \
+                                 +0.5*2*gap *torch.abs(gap) *(self.correct_coeff * correct \
+                                 + self.incorrect_coeff * (1 - correct))
+        reward1 = gap_rewards1.mean().detach()
+        reward = gap_rewards.mean().detach()
+        
+
+        
+        return reward,reward1,correct,gap_rewards,class_probs
+    
     def forward(
         self,
         source_texts: List[str],
@@ -88,6 +195,7 @@ class PromptedClassificationReward(BaseReward):
         prompt_tokens = output_tokens
         prompt_strings = self._convert_tokens_to_string(prompt_tokens)
         batch_size = len(source_texts)
+        rewards_bk: List[torch.Tensor] = []
 
         rewards: List[torch.Tensor] = []
         input_rewards: Dict[str, List[float]] = defaultdict(list)
@@ -98,26 +206,8 @@ class PromptedClassificationReward(BaseReward):
             formatted_templates = self._format_prompts(source_texts,
                                                        current_prompts)
             all_logits = self._get_logits(formatted_templates)
-            # [batch_size, vocab_size]
-            class_probs = torch.softmax(all_logits[:, self.verbalizer_ids], -1)
-            # [batch_size, num_classes]
-
-            # Get label and maximum not-label probabilities
-            label_probs = class_probs[range(batch_size), class_labels]
-            # [batch_size, 1]
-            not_label_probs = torch.where(
-                class_probs == label_probs.unsqueeze(1),
-                torch.Tensor([-1]).to(self.device), class_probs)
-            # [batch_size, num_classes]
-            max_not_label_probs, _ = torch.max(not_label_probs, -1)
-            # [batch_size, 1]
-
-            # Compute piecewise gap reward
-            gap = (label_probs - max_not_label_probs)
-            correct = (gap > 0).long()
-            gap_rewards = gap * (self.correct_coeff * correct \
-                                 + self.incorrect_coeff * (1 - correct))
-            reward = gap_rewards.mean().detach()
+            reward,reward_bk,correct,gap_rewards,class_probs=self.reward_engineering_XE(all_logits,batch_size,class_labels)
+           
 
             # Log quantities such as accuracy and class-wise reward
             acc = correct.float().mean()
@@ -129,6 +219,7 @@ class PromptedClassificationReward(BaseReward):
                     class_rewards.mean().item())
             quantities_to_log['gap_reward'].append(reward.item())
             rewards.append(reward)
+            rewards_bk.append(reward_bk)
 
             # keep track of rewards for z-score normalization
             input_rewards['z'] += [reward.item()]
@@ -146,8 +237,11 @@ class PromptedClassificationReward(BaseReward):
                                'Probs:', class_example_probs, '\n']
             print_strs += ['Accuracy:', acc.item(), '|',
                            'Reward:', round(reward.item(), 2)]
+            print_strs +=['Reward_bk:', round(reward_bk.item(), 2)]
             print(*print_strs)
         rewards_tensor = torch.stack(rewards)
+
+
 
         # z-score normalization (2nd stage)
         if mode == 'train' and self.compute_zscore:
@@ -159,6 +253,7 @@ class PromptedClassificationReward(BaseReward):
             idx_means = torch.tensor(input_reward_means['z']).float()
             idx_stds = torch.tensor(input_reward_stds['z']).float()
             rewards_tensor = (rewards_tensor - idx_means)/(idx_stds + 1e-4)
+
             for i in range(rewards_tensor.size(0)):
                 quantities_to_log['resized_reward'].append(
                     rewards_tensor[i].item())

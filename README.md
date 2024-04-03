@@ -3,6 +3,17 @@
 python run_fsc.py dataset=[sst-2, yelp-2, mr, cr, agnews, sst-5, yelp-5] dataset_seed=[0, 1, 2, 3, 4] prompt_length=[any integer (optional, default:5)] task_lm=[distilroberta-base, roberta-base, roberta-large, distilgpt2, gpt2, gpt2-medium, gpt2-large, gpt2-xl] random_seed=[any integer (optional)]
 
 
+{'SQL_ON/rewards/acc': tensor(0.5000, device='cuda:0'), 'SQL_ON/rewards/gap_reward_class_0': tensor(-163.1316), 'SQL_ON/rewards/gap_reward_class_1': tensor(188.6110), 'SQL_ON/rewards/gap_reward': tensor(12.7397), 'SQL_ON/rewards/resized_reward': tensor(0.)}
+
+logits.shape==torch.Size([2, 3, 50257])
+logits_   --->softmx
+[['Price', 'Size', 'Size'], ['Price', 'Product', 'ĠQuantity']]
+
+tensor([-1.0000,  1.0000], device='cuda:0')
+
+tensor(416.1516, device='cuda:0', grad_fn=<MeanBackward1>)
+
+
 This repo contains the code of the discrete prompt optimization framework described in the paper \
 **[RLPrompt: Optimizing Discrete Text Prompts With Reinforcement Learning](https://arxiv.org/abs/2205.12548)** \
 Mingkai Deng*,   Jianyu Wang*,   Cheng-Ping Hsieh* (equal contribution),   Yihan Wang,   Han Guo,   Tianmin Shu,   Meng Song,   Eric P. Xing,   Zhiting Hu 

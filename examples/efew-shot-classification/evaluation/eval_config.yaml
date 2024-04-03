@@ -7,10 +7,32 @@ dataset_seed: 0
 # Rewardg
 task_lm: "roberta-large"
 is_mask_lm: null
-prompt: "GroupEventStyAbsolutely absolutely"
 
+# New - XE
+# 12000
+# prompt: "DirectoryHomeDownloadMonth Round"
+# 12000
+# prompt: "SlotSetTaskService absolutely"
+
+
+# 5000
+# prompt: MotionSetHeadAbsolutely equally
+
+# 4980
+# prompt: MotionEffectHeadAbsolutely equally
+
+# 4960
+# Studio", "Set", "Head", "Absolutely"
+prompt: MaterialTouchFactAbsolutely absolutely
+# Material", "Touch", "Touch", "Absolutely", "\u0120absolutely
+# 11970#
+# prompt: "GroupEventStyAbsolutely absolutely"
+# 980
+# prompt: "GroupEventStyAbsolutely absolutely"
+# 11990
 # prompt: "MaterialEventPlanetAbsolutely absolutely"
 
+# 12000
 # prompt: "DriverEventStyAbsolutely equally"
 
 # Few-Shot Classification Config

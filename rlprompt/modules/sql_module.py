@@ -96,6 +96,8 @@ class SQLModule(BaseModule):
                                                       Dict[str, Any]]:
         loss_list = []
         loss_log_list = []
+
+        # self._forward_modes SQL_ON [<ForwardMode.SQL_ON: 'SQL_ON'>]
         for mode in self._forward_modes:
             _loss, _loss_log = self._forward(mode=mode, batch=batch)
             loss_list.append(_loss)
