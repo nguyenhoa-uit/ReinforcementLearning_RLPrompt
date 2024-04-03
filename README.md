@@ -1,3 +1,19 @@
+Báo cáo cuối kỳ môn Chuyên đề nghiên cứu về máy học và trí tuệ nhân tạo - CS2310.CH1801
+Đại học Công nghệ thông tin
+
+
+MSHV: Nguyễn Hoa – 220101044
+Nguyễn Trung Thu – 230101034
+
+GV: TS. Lương Ngọc Hoàng
+
+
+T4/2024
+
+
+
+
+
 # RL Prompt
 
 python run_fsc.py dataset=[sst-2, yelp-2, mr, cr, agnews, sst-5, yelp-5] dataset_seed=[0, 1, 2, 3, 4] prompt_length=[any integer (optional, default:5)] task_lm=[distilroberta-base, roberta-base, roberta-large, distilgpt2, gpt2, gpt2-medium, gpt2-large, gpt2-xl] random_seed=[any integer (optional)]
