@@ -1,3 +1,16 @@
+
+Báo cáo cuối kỳ môn Chuyên đề nghiên cứu về máy học và trí tuệ nhân tạo - CS2310.CH1801
+Đại học Công nghệ thông tin
+
+T4/2024
+
+MSHV: Nguyễn Hoa – 220101044
+Nguyễn Trung Thu – 230101034
+
+GV: TS. Lương Ngọc Hoàng
+
+
+
 # Prompted Few-Shot Classification Example
 
 The script below runs a 16-shot classification experiment, with options for `task_lm` and `dataset`. For each dataset, we provide 5 different 16-shot training sets, toggled by `dataset_seed`.
