@@ -1,0 +1,7 @@
+num_shots: 16
+base_path: ../data
+dataset: agnews
+dataset_seed: 0
+task_lm: roberta-large
+is_mask_lm: null
+prompt: Alert Blog Dialogue Diary Accountability
